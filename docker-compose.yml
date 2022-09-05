@@ -2,22 +2,15 @@ version: '3.1'
 
 services:
   db:
-    image: postgres
+    image: mongo
     restart: always
     environment:
-      POSTGRES_USER: example
-      POSTGRES_PASSWORD: example
-      POSTGRES_DB: gdol
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
     ports:
-      - 5432:5432
+      - 27017:27017
     volumes:
-      - db_data:/var/lib/postgresql/data
-  redis:
-    image: redis
-    restart: always
-    command: redis-server --requirepass example
-    ports:
-      - 6379:6379
+      - db_data:/data/db
 
 volumes:
   db_data:

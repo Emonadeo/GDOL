@@ -26,10 +26,6 @@
 		"eslint-config-prettier": "^8.5.0",
 		"eslint-plugin-svelte3": "^3.4.1",
 		"prettier": "^2.6.1",
-		"prettier-plugin-svelte": "^2.6.0",
-		"prisma": "^3.13.0"
-	},
-	"dependencies": {
-		"@prisma/client": "^3.13.0"
+		"prettier-plugin-svelte": "^2.6.0"
 	}
 }
