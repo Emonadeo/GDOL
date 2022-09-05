@@ -1,0 +1,10 @@
+overwrite: true
+schema: 'src/generated/payload.graphql'
+documents: 'src/graphql/**/*.graphql'
+generates:
+  src/generated/graphql.ts:
+    plugins:
+      - 'typescript'
+      - 'typescript-operations'
+      # - 'urql-introspection'
+      - 'typed-document-node'

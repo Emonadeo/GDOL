@@ -1,7 +1,10 @@
 import express from 'express';
 import payload from 'payload';
+import cors from 'cors';
 
 const app = express();
+
+app.use(cors());
 
 // TODO: env variables null safety
 payload.init({

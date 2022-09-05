@@ -4,8 +4,6 @@
 	import iconDelete from 'src/assets/icons/changelog/delete.svg';
 	import iconLower from 'src/assets/icons/changelog/lower.svg';
 	import iconRaise from 'src/assets/icons/changelog/raise.svg';
-	import { api } from 'src/api';
-	import type { Changelog, Level } from 'src/generated/openapi';
 
 	const dict = {
 		ADD: 'Added',

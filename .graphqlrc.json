@@ -1,0 +1,4 @@
+{
+	"schema": "server/src/generated/payload.graphql",
+	"documents": "**/*.{graphql,js,ts,jsx,tsx,svelte}"
+}

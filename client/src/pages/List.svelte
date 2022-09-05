@@ -1,25 +1,16 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import fzf from 'fuzzysort';
 	import { getYoutubeIdFromUrl } from 'src/util';
-	import type { Level } from 'src/generated/openapi';
-	import { api } from 'src/api';
+	import { client } from 'src/urql';
+	import { GetListDocument } from 'src/generated/graphql';
+	import { queryStore } from '@urql/svelte';
 
-	let levels: Level[] = [];
-
-	onMount(async () => {
-		const res = await api.list.getList();
-
-		if (!res.ok) {
-			// TODO: Show Error
-			return;
-		}
-
-		levels = res.data;
-	});
+	const res = queryStore({ client, query: GetListDocument });
 
 	let search: string = '';
 	let toggled: boolean = false;
+
+	$: levels = $res.data?.List?.levels?.map((lvl) => lvl.level) || [];
 
 	// TODO: clean up
 	$: fLevels = search ? fzf.go(search, levels, { key: 'name' }).map((res) => res.obj) : levels;
@@ -31,68 +22,77 @@
 	}
 </script>
 
-<div class="page-list">
-	<aside>
-		<div class="toggle" style:border-bottom={toggled ? null : 'none'}>
-			<button on:click={toggle}>
-				<img
-					src={toggled ? 'src/assets/icons/close.svg' : 'src/assets/icons/filter.svg'}
-					alt="Filter"
+{#if $res.fetching}
+	<div />
+{:else if $res.error}
+	<div />
+{:else}
+	<div class="page-list">
+		<aside>
+			<div class="toggle" style:border-bottom={toggled ? null : 'none'}>
+				<button on:click={toggle}>
+					<img
+						src={toggled ? 'src/assets/icons/close.svg' : 'src/assets/icons/filter.svg'}
+						alt="Filter"
+					/>
+				</button>
+			</div>
+			<ul class="sections" role="list">
+				{#each $res.data.List.sections as section}
+					<li>
+						<a href="" class="type-label-lg">{section.name}</a>
+					</li>
+				{/each}
+			</ul>
+			<div class="archive">
+				<a href="" class="archive type-label-lg">Archive</a>
+			</div>
+		</aside>
+		<main>
+			<div class="search" style:display={toggled ? null : 'none'}>
+				<input
+					class="textfield type-label-lg"
+					type="text"
+					placeholder="Search"
+					bind:value={search}
 				/>
-			</button>
-		</div>
-		<ul class="sections" role="list">
-			<li>
-				<a href="" class="type-label-lg">Main</a>
-			</li>
-			<li>
-				<a href="" class="type-label-lg">Extended</a>
-			</li>
-		</ul>
-		<div class="archive">
-			<a href="" class="archive type-label-lg">Archive</a>
-		</div>
-	</aside>
-	<main>
-		<div class="search" style:display={toggled ? null : 'none'}>
-			<input
-				class="textfield type-label-lg"
-				type="text"
-				placeholder="Search"
-				bind:value={search}
-			/>
-		</div>
-		<p class="no-results" style:display={fLevels.length === 0 ? null : 'none'}>No results.</p>
-		<ol role="list" class="levels">
-			{#each fLevels as level}
-				<li>
-					<a href={`/list/${level.rank}`} class="level">
-						<div class="rank">
-							<h2 class:outline={level.rank < 100}>
-								{Math.floor((level.rank / 100) % 10)}
-							</h2>
-							<h2 class:outline={level.rank < 10}>
-								{Math.floor((level.rank / 10) % 10)}
-							</h2>
-							<h2>{Math.floor(level.rank % 10)}</h2>
-						</div>
-						<img
-							class="thumbnail"
-							src={`https://img.youtube.com/vi/${getYoutubeIdFromUrl(
-								level.video
-							)}/mqdefault.jpg`}
-							alt="Thumbnail"
-						/>
-						<div class="meta">
-							<h2>{level.name}</h2>
-							<p>{level.user.name}</p>
-						</div>
-					</a>
-				</li>
-			{/each}
-		</ol>
-	</main>
-</div>
+			</div>
+			<p class="no-results" style:display={fLevels.length === 0 ? null : 'none'}>
+				No results.
+			</p>
+			<ol role="list" class="levels">
+				{#each fLevels as level, i}
+					{@const rank = i + 1}
+					<li>
+						<a href={`/list/${rank}`} class="level">
+							<div class="rank">
+								<h2 class:outline={rank < 100}>
+									{Math.floor((rank / 100) % 10)}
+								</h2>
+								<h2 class:outline={rank < 10}>
+									{Math.floor((rank / 10) % 10)}
+								</h2>
+								<h2>{Math.floor(rank % 10)}</h2>
+							</div>
+							<img
+								class="thumbnail"
+								src={`https://img.youtube.com/vi/${
+									// TODO: Remove rickroll
+									level.video ? getYoutubeIdFromUrl(level.video) : 'oHg5SJYRHA0'
+								}/mqdefault.jpg`}
+								alt="Thumbnail"
+							/>
+							<div class="meta">
+								<h2>{level.name}</h2>
+								<p>{level.user.name}</p>
+							</div>
+						</a>
+					</li>
+				{/each}
+			</ol>
+		</main>
+	</div>
+{/if}
 
 <style lang="scss">
 	@use 'src/styles/color';
@@ -136,8 +136,10 @@
 					display: flex;
 					gap: 1rem;
 					align-items: center;
+					height: 75%;
 
 					> li {
+						flex: 1 0 auto;
 						display: flex;
 						align-items: center;
 						gap: 1rem;
@@ -149,7 +151,8 @@
 
 					> li::after {
 						content: '';
-						height: 6rem;
+						height: 1rem;
+						flex: 1 0 auto;
 						display: block;
 						border-left: 1px solid white;
 					}
@@ -157,6 +160,7 @@
 
 				.archive {
 					display: flex;
+					justify-content: flex-end;
 					align-items: center;
 					writing-mode: vertical-rl;
 					color: inherit;

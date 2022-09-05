@@ -1,7 +1,4 @@
 <script lang="ts">
-	import { api } from 'src/api';
-
-	import type { Record, UserFull } from 'src/generated/openapi';
 	import { onMount } from 'svelte';
 
 	const listLength = 150; // TODO: Configurable
@@ -9,8 +6,8 @@
 
 	export let id: number;
 
-	let user: UserFull;
-	let recordsAndVerifications: Record[];
+	let user;
+	let recordsAndVerifications;
 
 	onMount(async () => {
 		const res = await api.users.getUser(id);

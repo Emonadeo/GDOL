@@ -15,9 +15,10 @@ export default buildConfig({
 	globals: [List],
 	collections: [Staff, Users, Levels],
 	typescript: {
-		outputFile: resolve(__dirname, 'payload-types.ts'),
+		outputFile: resolve(__dirname, './generated/payload.ts'),
 	},
 	graphQL: {
-		schemaOutputFile: resolve(__dirname, 'generated-schema.graphql'),
+		schemaOutputFile: resolve(__dirname, './generated/payload.graphql'),
 	},
+	cors: '*',
 });

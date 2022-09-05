@@ -1,0 +1,17 @@
+query GetList {
+	List {
+		sections {
+			name
+			length
+		}
+		levels {
+			level {
+				name
+				video
+				user {
+					name
+				}
+			}
+		}
+	}
+}

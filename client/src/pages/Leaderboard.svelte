@@ -1,8 +1,6 @@
 <script lang="ts">
 	import fzf from 'fuzzysort';
-	import { api } from 'src/api';
 
-	import type { UserWithScore } from 'src/generated/openapi';
 	import { ordinal } from 'src/util';
 
 	import { onMount } from 'svelte';

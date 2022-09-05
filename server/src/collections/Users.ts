@@ -2,6 +2,11 @@ import { CollectionConfig } from 'payload/types';
 
 const Users: CollectionConfig = {
 	slug: 'users',
+	access: {
+		read() {
+			return true;
+		},
+	},
 	fields: [
 		{
 			name: 'name',

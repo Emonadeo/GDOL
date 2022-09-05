@@ -2,6 +2,11 @@ import { CollectionConfig } from 'payload/types';
 
 const Users: CollectionConfig = {
 	slug: 'levels',
+	access: {
+		read() {
+			return true;
+		},
+	},
 	admin: {
 		useAsTitle: 'name',
 	},

@@ -1,7 +1,4 @@
 <script lang="ts">
-	import { api } from 'src/api';
-
-	import type { Level, Record } from 'src/generated/openapi';
 	import { embed, ordinal } from 'src/util';
 	import { onMount } from 'svelte';
 

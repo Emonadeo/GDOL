@@ -2,6 +2,11 @@ import { GlobalConfig } from 'payload/types';
 
 const List: GlobalConfig = {
 	slug: 'list',
+	access: {
+		read() {
+			return true;
+		},
+	},
 	fields: [
 		{
 			name: 'sections',

@@ -1,8 +1,3 @@
 {
-	"recommendations": [
-		"svelte.svelte-vscode",
-		"dbaeumer.vscode-eslint",
-		"esbenp.prettier-vscode",
-		"Prisma.prisma"
-	]
+	"recommendations": ["svelte.svelte-vscode", "dbaeumer.vscode-eslint", "esbenp.prettier-vscode"]
 }
