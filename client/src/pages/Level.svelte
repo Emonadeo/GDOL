@@ -1,91 +1,93 @@
 <script lang="ts">
+	import { queryStore } from '@urql/svelte';
+	import { client } from 'src/urql';
+	import { GetListLevelsDocument } from 'src/generated/graphql';
 	import { embed, ordinal } from 'src/util';
-	import { onMount } from 'svelte';
 
 	export let rank: number;
 
-	let level: Level;
-	let records: Record[] = [];
+	const res = queryStore({ client, query: GetListLevelsDocument });
+	const records = []; // TODO: Fetch records
 
-	onMount(async () => {
-		const res = await api.list.getListLevel(rank);
-		level = res.data;
-
-		const res2 = await api.levels.getLevelRecords(level.id);
-		records = res2.data;
-	});
+	$: level = $res.data?.List?.levels[rank - 1].level;
 </script>
 
-<div class="page-level">
-	{#if level}
-		<div class="details">
-			<span class="rank type-title-lg">{String(rank).padStart(3, '0')}</span>
-			<h2 class="name">{level.name}</h2>
-			<iframe
-				class="video"
-				src={embed(level.video)}
-				title="youtube video player"
-				allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-				allowfullscreen
-			/>
-			<dl class="credits">
-				<div class="publisher">
-					<dt class="type-title-sm">Publisher</dt>
-					<dd class="type-body-lg">{level.user.name}</dd>
-				</div>
-				<div class="verifier">
-					<dt class="type-title-sm">Verifier</dt>
-					<dd class="type-body-lg">{level.verifier.name}</dd>
-				</div>
-				<div class="creators">
-					<dt class="type-title-sm">Creators</dt>
-					<dd class="type-body-lg">
-						{#each level.creators as creator, i}
-							<a href={`/users/${creator.id}`}>{creator.name}</a
-							>{#if i < level.creators.length - 1}<span>, </span>{/if}
-						{/each}
-					</dd>
-				</div>
-			</dl>
-		</div>
-		<div class="records">
-			<h5>Leaderboard</h5>
-			<table>
-				{#each records as record, i}
-					{@const rank = i + 1}
-					{@const complete = record.percentage === 100}
-					<tr class="record">
-						<td
-							class="rank"
-							class:gold={i === 0}
-							class:silver={i === 1}
-							class:bronze={i === 2}
-						>
-							{#if complete}
-								<p class="mono" class:type-body-md={i > 2}>
-									<span>{rank}</span><span>{ordinal(rank)}</span>
-								</p>
-							{/if}
-						</td>
-						<td class="percentage">
-							<p class="mono" class:bold={complete}>{record.percentage}%</p>
-						</td>
-						<td class="user">
-							<a href={`/users/${record.user.id}`}>
-								<p>{record.user.name}</p>
-							</a>
-						</td>
-						<td class="video">
-							<a href={record.video} target="_blank">
-								<img src="/src/assets/icons/media/youtube.svg" alt="YouTube" />
-							</a>
-						</td>
-					</tr>
-				{/each}
-			</table>
-		</div>
-	{/if}
-</div>
+{#if $res.fetching}
+	<div />
+{:else if $res.error}
+	<div />
+{:else}
+	<div class="page-level">
+		{#if level}
+			<div class="details">
+				<span class="rank type-title-lg">{String(rank).padStart(3, '0')}</span>
+				<h2 class="name">{level.name}</h2>
+				<iframe
+					class="video"
+					src={embed(level.video)}
+					title="youtube video player"
+					allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+					allowfullscreen
+				/>
+				<dl class="credits">
+					<div class="publisher">
+						<dt class="type-title-sm">Publisher</dt>
+						<dd class="type-body-lg">{level.user.name}</dd>
+					</div>
+					<div class="verifier">
+						<dt class="type-title-sm">Verifier</dt>
+						<dd class="type-body-lg">{level.verifier.name}</dd>
+					</div>
+					<div class="creators">
+						<dt class="type-title-sm">Creators</dt>
+						<dd class="type-body-lg">
+							{#each level.creators as creator, i}
+								<a href={`/users/${creator.id}`}>{creator.name}</a
+								>{#if i < level.creators.length - 1}<span>, </span>{/if}
+							{/each}
+						</dd>
+					</div>
+				</dl>
+			</div>
+			<div class="records">
+				<h5>Leaderboard</h5>
+				<table>
+					{#each records as record, i}
+						{@const rank = i + 1}
+						{@const complete = record.percentage === 100}
+						<tr class="record">
+							<td
+								class="rank"
+								class:gold={i === 0}
+								class:silver={i === 1}
+								class:bronze={i === 2}
+							>
+								{#if complete}
+									<p class="mono" class:type-body-md={i > 2}>
+										<span>{rank}</span><span>{ordinal(rank)}</span>
+									</p>
+								{/if}
+							</td>
+							<td class="percentage">
+								<p class="mono" class:bold={complete}>{record.percentage}%</p>
+							</td>
+							<td class="user">
+								<a href={`/users/${record.user.id}`}>
+									<p>{record.user.name}</p>
+								</a>
+							</td>
+							<td class="video">
+								<a href={record.video} target="_blank">
+									<img src="/src/assets/icons/media/youtube.svg" alt="YouTube" />
+								</a>
+							</td>
+						</tr>
+					{/each}
+				</table>
+			</div>
+		{/if}
+	</div>
+{/if}
 
 <style lang="scss">
 	@use 'src/styles/screen';

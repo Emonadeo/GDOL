@@ -1,0 +1,22 @@
+query GetListLevels {
+	List {
+		levels {
+			level {
+				name
+				gdId
+				requirement
+				video
+				user {
+					name
+				}
+				verifier {
+					name
+				}
+				creators {
+					id
+					name
+				}
+			}
+		}
+	}
+}
