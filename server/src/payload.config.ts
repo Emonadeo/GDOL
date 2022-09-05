@@ -6,6 +6,7 @@ import List from './globals/List';
 import Users from './collections/Users';
 import Levels from './collections/Levels';
 import Staff from './collections/Staff';
+import Records from './collections/Records';
 
 export default buildConfig({
 	serverURL: 'http://localhost:3000',
@@ -13,7 +14,7 @@ export default buildConfig({
 		user: Staff.slug,
 	},
 	globals: [List],
-	collections: [Staff, Users, Levels],
+	collections: [Staff, Users, Levels, Records],
 	typescript: {
 		outputFile: resolve(__dirname, './generated/payload.ts'),
 	},

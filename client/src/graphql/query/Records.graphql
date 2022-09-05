@@ -1,0 +1,12 @@
+query GetRecordsByLevel($level: String!) {
+	Records(where: { level: { equals: $level } }, limit: 2147483647, sort: "-percentage") {
+		docs {
+			user {
+				id
+				name
+			}
+			percentage
+			video
+		}
+	}
+}

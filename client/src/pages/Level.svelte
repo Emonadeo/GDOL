@@ -1,20 +1,31 @@
 <script lang="ts">
 	import { queryStore } from '@urql/svelte';
 	import { client } from 'src/urql';
-	import { GetListLevelsDocument } from 'src/generated/graphql';
+	import { GetListLevelsDocument, GetRecordsByLevelDocument } from 'src/generated/graphql';
 	import { embed, ordinal } from 'src/util';
 
 	export let rank: number;
 
-	const res = queryStore({ client, query: GetListLevelsDocument });
-	const records = []; // TODO: Fetch records
+	const resLevel = queryStore({ client, query: GetListLevelsDocument });
 
-	$: level = $res.data?.List?.levels[rank - 1].level;
+	$: level = $resLevel.data?.List?.levels[rank - 1].level;
+
+	$: resRecords = level
+		? queryStore({
+				client,
+				query: GetRecordsByLevelDocument,
+				variables: {
+					level: level.id,
+				},
+		  })
+		: undefined;
+
+	$: records = $resRecords?.data?.Records?.docs;
 </script>
 
-{#if $res.fetching}
+{#if $resLevel.fetching || !$resRecords || $resRecords.fetching}
 	<div />
-{:else if $res.error}
+{:else if $resLevel.error || $resRecords.error}
 	<div />
 {:else}
 	<div class="page-level">

@@ -3,7 +3,7 @@ import express from 'express';
 import { writeFile, readFile } from 'fs/promises';
 import payload from 'payload';
 
-import { Level, List, User } from './src/payload-types';
+import { Level, List, User, Record } from './src/generated/payload';
 
 const app = express();
 
@@ -33,10 +33,10 @@ interface Demon {
 
 interface DemonFull extends Demon {
 	creators: Player[];
-	records: Record[];
+	records: DemonRecord[];
 }
 
-interface Record {
+interface DemonRecord {
 	id: number;
 	progress: number;
 	video: string;
@@ -82,7 +82,12 @@ async function main() {
 
 	const levelMap = new Map<number, string>();
 	for (const demon of demons) {
-		const users: Player[] = [demon.publisher, demon.verifier, ...demon.creators];
+		const users: Player[] = [
+			demon.publisher,
+			demon.verifier,
+			...demon.creators,
+			...demon.records.map((r) => r.player),
+		];
 		const userMap = new Map<number, string>();
 		for (const user of users) {
 			// Check if user already exists
@@ -111,22 +116,48 @@ async function main() {
 		});
 		if (qry.totalDocs > 0) {
 			levelMap.set(demon.level_id, qry.docs[0].id);
-			continue;
+		} else {
+			// Create level if not exists
+			const pLevel = await payload.create<Level>({
+				collection: 'levels',
+				data: {
+					name: demon.name,
+					gdId: demon.level_id,
+					requirement: demon.requirement,
+					video: demon.video,
+					user: userMap.get(demon.publisher.id),
+					verifier: userMap.get(demon.verifier.id),
+					creators: demon.creators.map((c) => userMap.get(c.id)),
+				},
+			});
+			levelMap.set(demon.level_id, pLevel.id);
 		}
-		// Create level if not exists
-		const pLevel = await payload.create<Level>({
-			collection: 'levels',
-			data: {
-				name: demon.name,
-				gdId: demon.level_id,
-				requirement: demon.requirement,
-				video: demon.video,
-				user: userMap.get(demon.publisher.id),
-				verifier: userMap.get(demon.verifier.id),
-				creators: demon.creators.map((c) => userMap.get(c.id)),
-			},
-		});
-		levelMap.set(demon.level_id, pLevel.id);
+
+		for (const record of demon.records) {
+			// Check if record
+			const qry = await payload.find<Record>({
+				collection: 'records',
+				where: {
+					and: [
+						{ user: { equals: userMap.get(record.player.id) } },
+						{ level: { equals: levelMap.get(demon.level_id) } },
+					],
+				},
+			});
+			if (qry.totalDocs > 0) {
+				continue;
+			}
+			// Create records if not exists
+			await payload.create<Record>({
+				collection: 'records',
+				data: {
+					level: levelMap.get(demon.level_id),
+					user: userMap.get(record.player.id),
+					percentage: record.progress,
+					video: record.video,
+				},
+			});
+		}
 	}
 
 	// Update List

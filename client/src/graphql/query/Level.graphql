@@ -2,6 +2,7 @@ query GetListLevels {
 	List {
 		levels {
 			level {
+				id
 				name
 				gdId
 				requirement
