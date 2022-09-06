@@ -21,6 +21,12 @@ const Users: CollectionConfig = {
 			name: 'nationality',
 			type: 'text',
 		},
+		{
+			name: 'score',
+			type: 'number',
+			// hidden: true,
+			defaultValue: 0,
+		},
 	],
 };
 
